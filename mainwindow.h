@@ -10,6 +10,14 @@
 #include <QValueAxis>
 #include <QElapsedTimer>
 
+// P4: widgets nuevos de la pestaña Temperatura (se crean en codigo, no en el .ui)
+class QVBoxLayout;
+class QLabel;
+class QCheckBox;
+class QTableWidget;
+class QSpinBox;
+class QLineEdit;
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -36,8 +44,10 @@ private slots:
     // Servo (trabajo de clase)
     void on_deslizadorAngulo_valueChanged(int value);
 
-    // Contador de objetos (extra con el HC-SR04)
-    void on_botonReiniciarContador_clicked();
+    // P4: temperatura y base SQLite
+    void alPresionarLeerTemperatura();
+    void cargarHistorial();
+    void alPresionarGuardarNota();
 
 private:
     Ui::MainWindow *ui;
@@ -58,10 +68,16 @@ private:
     QValueAxis *ejeDistancia = new QValueAxis;
     QElapsedTimer reloj;        // segundos desde que se conecto
 
-    // Contador de objetos: cuenta cada vez que algo pasa frente al sensor
-    int  contadorObjetos = 0;       // cuantos objetos han pasado
-    bool objetoPresente  = false;   // true mientras el objeto sigue enfrente
-    QLineSeries *lineaUmbral = new QLineSeries;   // linea roja del umbral en la grafica
+    // P4: pestaña Temperatura
+    QTimer m_leerDhtAuto;                // pide {"tipo":"leer_dht"} cada 10 s mientras la casilla este marcada
+    QVBoxLayout *m_capaTemp = nullptr;   // aqui van los widgets nuevos (E1, E3-E5)
+    QLabel *m_temperatura = nullptr;     // ultima lectura valida
+    QCheckBox *m_guardarAuto = nullptr;  // «Guardar cada 10 s»
+    QTableWidget *m_tabla = nullptr;     // id, fecha y hora, °C, nota
+    QLabel *m_total = nullptr;           // SELECT COUNT(*)
+    QLabel *m_aviso = nullptr;           // ultimo mensaje de la base (guardada, invalida, UPDATE...)
+    QSpinBox *m_id = nullptr;            // id de la fila a anotar (E5)
+    QLineEdit *m_nota = nullptr;         // texto de la nota (E5)
 
     void mover(const QString &accion);
     void enviarJson(const QJsonObject &objeto, bool mostrarEnRegistro = true);
@@ -69,8 +85,11 @@ private:
     void agregarLectura(double distanciaCm);
     void mostrarDht(const QJsonObject &objeto);
     void habilitarControles(bool habilitar);
-    void actualizarContador(double distanciaCm);
-    void mostrarContador();
-    void dibujarUmbral();
+
+    // P4
+    void construirPestanaTemperatura();
+    bool abrirBase();
+    void mostrarEsquema();
+    void guardarTemperatura(double celsius);
 };
 #endif // MAINWINDOW_H

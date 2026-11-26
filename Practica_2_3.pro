@@ -1,4 +1,4 @@
-QT += widgets websockets charts
+QT += widgets websockets charts sql
 
 CONFIG += c++17
 
